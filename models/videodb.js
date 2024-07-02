@@ -1,29 +1,17 @@
-const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
-const authJWT = (req, res, next) => {
-    //console.log('authJWT headers:', JSON.stringify(req.headers));
-    const authHeader = req.headers['emailization'];
-    //const authHeader = req.headers['cookie'];
-    console.log('authJWT authHeader:', authHeader);
-    if (!authHeader) {
-        return res.status(401).send('No token provided');
-    }
+const videoSchema = new mongoose.Schema({
+    email: { type: String, ref: 'User', required: true },
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+    url: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
+    views: { type: Number, default: 0 },
+    likes: { type: Number, default: 0 },
+    likedBy: {type:[{ type: String, ref: 'User' } ], default: [] },
+    dislikes: { type: Number, default: 0 },
+    dislikedBy: {type:[{ type: String, ref: 'User' } ], default: [] },
+    comments: {type:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' } ], default: []}
+});
 
-    const token = authHeader.split(' ')[1]; 
-    console.log('authJWT token:' + token);
-    if (!token) {
-        console.log('Invalid token format');
-        return res.status(401).send('Invalid token format');
-    }
-
-    try {
-        req.user = jwt.verify(token, 'secret');
-        console.log('authJWT req.user:', req.user);
-        next();
-    } catch (err) {
-        console.log('Invalid token:' + err);
-        return res.status(401).send('Invalid token');
-    }
-};
-
-module.exports = authJWT;
+module.exports = mongoose.model('Video', videoSchema);

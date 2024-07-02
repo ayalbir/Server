@@ -4,12 +4,14 @@ const User = require('../models/userdb');
 const registerUser = async (req, res) => {
     try {
         const { email, password, firstName, familyName, birthdate, gender, profileImage } = req.body;
+        console.log("register: " + req.body);
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             console.log('User already exists:', email); 
-            return res.status(400).send('User already exists');
+            return res.status(401).send('User already exists');
         }
         const user = new User({ email, password, firstName, familyName, birthdate, gender, profileImage });
+        console.log('User:', user);
         await user.save();
         res.status(201).send(user);
     } catch (err) {

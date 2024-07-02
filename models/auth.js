@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
 
 const authJWT = (req, res, next) => {
-    //console.log('authJWT headers:', JSON.stringify(req.headers));
-    const authHeader = req.headers['emailization'];
+    console.log('authJWT headers:', JSON.stringify(req.headers));
+    const authHeader = req.headers['authorization'];
     //const authHeader = req.headers['cookie'];
     console.log('authJWT authHeader:', authHeader);
     if (!authHeader) {

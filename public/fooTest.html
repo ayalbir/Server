@@ -3,16 +3,15 @@
 <script>
   async function foo() {
     const data1 = {
-      username: 'ayal@gmail.com',
-      password: '456780',
-      privateName: 'dvir123',
+      email: 'dvir433@gmail.com',
+      password: '4567801',
+      firstName: 'dvir123',
       familyName: 'yazdi456',
       birthdate: '1996-12-12',
       gender: "male",
-      image: 'https://www.google.com'
+      profileImage: 'https://www.google.com'
     };
-
-/*
+    /*
 username: { type: string, ref: 'User', required: true },
     title: { type: String, required: true },
     description: { type: String, required: true },
@@ -27,34 +26,34 @@ username: { type: string, ref: 'User', required: true },
     };
 
     const data3 = {
-        username: 'dvir@gmail.com',
-        comment: 'dviryaz2 comment',
+        email: 'dvir433@gmail.com',
+        comment: 'thank you',
         createdAt: new Date()
     };
-    
 
     const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MTk5MDU4MTksImV4cCI6MTcxOTk5MjIxOX0.ZFz0cwplIz4U0w_n1CntdgCIGEFicf6_HwDrK6SaP9s";
-    console.log("data:" + data2);
-    //const res = await fetch('http://127.0.0.1:8080/api/Tokens', {
-      //'method': 'post',
-    
-    const res = await fetch('http://127.0.0.1:8080/api/Tokens', {    // /dvir@gmail.com
-    ///api/users/:id/videos/:pid
-        //const res = await fetch('http://127.0.0.1:8080/api/videos/667dbd402954b4ae314e6408/comments', {  
-        //users/:id/videos/:pid/likes  
-        //const res = await fetch('http://127.0.0.1:8080/api/videos/667dbd402954b4ae314e6408/comments/667dc5f559be178b63fb75d2', {
-        'method': 'POST',
-      'headers': {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }, 
-      'body': JSON.stringify(data1)
-    });
-    
-}
+    console.log("data:" + JSON.stringify(data1));
 
- 
-  
+    try {
+      const res = await fetch('/api/comments/668403eed3226e573743911a', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data3)
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}, message: ${await res.text()}`);
+      }
+
+      const responseData = await res.json();
+      console.log("Response data:", responseData);
+    } catch (error) {
+      console.error("Error during fetch:", error);
+    }
+  }
 
   foo();
 </script>

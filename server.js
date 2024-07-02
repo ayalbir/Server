@@ -4,7 +4,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const userRoutes = require('./routes/userRoutes');
+const userRoutes = require('./routes/userRoutes.js');
 const videoRoutes = require('./routes/videoRoutes');
 const commentsRoutes = require('./routes/commentRoutes');
 
