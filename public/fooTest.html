@@ -1,0 +1,62 @@
+<html>
+<body>
+<script>
+  async function foo() {
+    const data1 = {
+      username: 'ayal@gmail.com',
+      password: '456780',
+      privateName: 'dvir123',
+      familyName: 'yazdi456',
+      birthdate: '1996-12-12',
+      gender: "male",
+      image: 'https://www.google.com'
+    };
+
+/*
+username: { type: string, ref: 'User', required: true },
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+    url: { type: String, required: true },
+    createdAt: 
+    */
+    const data2 = {  
+        title: 'euro2004',
+        description: 'dvir description',
+        url: 'https://www.google.com.il',
+        views: 16
+    };
+
+    const data3 = {
+        username: 'dvir@gmail.com',
+        comment: 'dviryaz2 comment',
+        createdAt: new Date()
+    };
+    
+
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MTk5MDU4MTksImV4cCI6MTcxOTk5MjIxOX0.ZFz0cwplIz4U0w_n1CntdgCIGEFicf6_HwDrK6SaP9s";
+    console.log("data:" + data2);
+    //const res = await fetch('http://127.0.0.1:8080/api/Tokens', {
+      //'method': 'post',
+    
+    const res = await fetch('http://127.0.0.1:8080/api/Tokens', {    // /dvir@gmail.com
+    ///api/users/:id/videos/:pid
+        //const res = await fetch('http://127.0.0.1:8080/api/videos/667dbd402954b4ae314e6408/comments', {  
+        //users/:id/videos/:pid/likes  
+        //const res = await fetch('http://127.0.0.1:8080/api/videos/667dbd402954b4ae314e6408/comments/667dc5f559be178b63fb75d2', {
+        'method': 'POST',
+      'headers': {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }, 
+      'body': JSON.stringify(data1)
+    });
+    
+}
+
+ 
+  
+
+  foo();
+</script>
+</body>
+</html>
