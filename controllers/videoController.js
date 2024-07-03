@@ -64,18 +64,25 @@ const getVideosForUser = async (req, res) => {
 const getTopAndRandomVideos = async (req, res) => {
     try {
         const totalVideos = await Video.countDocuments();
-        if (totalVideos < 20) {
+        if (totalVideos < 4) {
             return res.status(204).send('Not enough videos');
         }
-        
-        const top10ViewedVideos = await Video.find().sort({ views: -1 }).limit(10);
-        const randomVideos = await Video.aggregate([{ $sample: { size: 10 } }]);
+
+        const top10ViewedVideos = await Video.find().sort({ views: -1 }).limit(2);
+        const top10ViewedVideoIds = top10ViewedVideos.map(video => video._id);
+
+        const randomVideos = await Video.aggregate([
+            { $match: { _id: { $nin: top10ViewedVideoIds } } },
+            { $sample: { size: 2 } }
+        ]);
+
         const combinedVideos = top10ViewedVideos.concat(randomVideos).sort(() => Math.random() - 0.5);
         res.status(200).json(combinedVideos);
     } catch (err) {
         res.status(500).send(err);
     }
 };
+
 
 const createVideo = async (req, res) => {
     try {
@@ -91,8 +98,8 @@ const createVideo = async (req, res) => {
 const getVideoById = async (req, res) => {
     try {
         const { id, pid } = req.params;
-        const video = await Video.findOne({ email: id, _id: pid }).populate('comments');
-        if (!video || video.email !== id) {
+        const video = await Video.findOne({ _id: pid }).populate('comments');
+        if (!video) {
             return res.status(404).send('Video not found');
         }
         res.status(200).json(video);
@@ -103,9 +110,9 @@ const getVideoById = async (req, res) => {
 
 const updateVideo = async (req, res) => {
     try {
-        const { id, pid } = req.params;
-        const updatedVideo = await Video.findOneAndUpdate({ email: id, _id: pid }, req.body, { new: true });
-        if (!updatedVideo || updatedVideo.email !== id) {
+        const {pid } = req.params;
+        const updatedVideo = await Video.findOneAndUpdate({_id: pid }, req.body, { new: true });
+        if (!updatedVideo) {
             return res.status(404).send('Video not found');
         }
         res.status(200).json(updatedVideo);
@@ -116,9 +123,9 @@ const updateVideo = async (req, res) => {
 
 const deleteVideo = async (req, res) => {
     try {
-        const { id, pid } = req.params;
-        const video = await Video.findOneAndDelete({ email: id, _id: pid });
-        if (!video || video.email !== id) {
+        const { pid } = req.params;
+        const video = await Video.findOneAndDelete({ _id: pid });
+        if (!video) {
             return res.status(404).send('Video not found');
         }
         res.status(200).json({ message: 'Video deleted' });

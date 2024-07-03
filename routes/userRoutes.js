@@ -21,7 +21,7 @@ router.post('/', (req, res, next) => {
   next();
 }, userController.registerUser);
 
-//router.get('/api/users', authJWT, userController.getAllUsers);
+router.get('/api/users', userController.getAllUsers);
 router.post('/api/users', userController.registerUser);
 router.post('/api/tokens', userController.generateToken);
 router.get('/api/users/:id', authJWT, userController.getUserById);
