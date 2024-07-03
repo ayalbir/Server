@@ -4,8 +4,8 @@ const Video = require('../models/videodb');
 const createComment = async (req, res) => {
     try {
         const { pid } = req.params;
-        const { email, comment } = req.body;
-        const newComment = new Comment({ videoId: pid, email, comment, createdAt: new Date() });
+        const { email, text , profilePicture } = req.body;
+        const newComment = new Comment({ videoId: pid, email, text, profilePicture, createdAt: new Date() });
         await newComment.save();
         await Video.findOneAndUpdate({ _id: pid }, { $push: { comments: newComment._id } });
         res.status(201).json(newComment);
