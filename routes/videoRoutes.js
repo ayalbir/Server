@@ -12,6 +12,7 @@ router.post('/api/users/:id/videos', authJWT, videoController.createVideo);
 router.get('/api/users/:id/videos/:pid', videoController.getVideoById);
 router.put('/api/users/:id/videos/:pid', authJWT, videoController.updateVideo);
 router.patch('/api/users/:id/videos/:pid', authJWT, videoController.updateVideo);
+router.patch('/api/videos/:pid/views', videoController.updateVideoViews);
 router.delete('/api/users/:id/videos/:pid', authJWT, videoController.deleteVideo);
 
 module.exports = router;

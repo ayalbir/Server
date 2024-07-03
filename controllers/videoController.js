@@ -134,6 +134,24 @@ const deleteVideo = async (req, res) => {
     }
 };
 
+const updateVideoViews = async (req, res) => {
+    try {
+        const { pid } = req.params;
+        const updatedVideo = await Video.findOneAndUpdate(
+            { _id: pid },
+            { $inc: { views: 1 } },
+            { new: true }
+        );
+        if (!updatedVideo) {
+            return res.status(404).send('Video not found');
+        }
+        res.status(200).json(updatedVideo);
+    } catch (err) {
+        res.status(400).send(err);
+    }
+};
+
+
 module.exports = {
     likeVideo,
     dislikeVideo,
@@ -142,5 +160,6 @@ module.exports = {
     createVideo,
     getVideoById,
     updateVideo,
-    deleteVideo
+    deleteVideo, 
+    updateVideoViews,
 };
