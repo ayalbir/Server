@@ -3,22 +3,27 @@ const User = require('../models/userdb');
 
 const registerUser = async (req, res) => {
     try {
-        const { email, password, firstName, familyName, birthdate, gender, profileImage } = req.body;
-        console.log("register: " + req.body);
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            console.log('User already exists:', email); 
-            return res.status(401).send('User already exists');
-        }
-        const user = new User({ email, password, firstName, familyName, birthdate, gender, profileImage });
-        console.log('User:', user);
-        await user.save();
-        res.status(201).send(user);
+      const { email, password, firstName, familyName, birthdate, gender, profileImage } = req.body;
+      console.log("register:", req.body);
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        console.log('User already exists:', email);
+        return res.status(401).send('User already exists');
+      }
+      const user = new User({ email, password, firstName, familyName, birthdate, gender, profileImage });
+      console.log('User:', user);
+      await user.save();
+      res.status(201).send(user);
     } catch (err) {
-        console.log('Error saving user:', err); 
+      if (err.code === 11000) {
+        console.log('Duplicate key error:', err.message);
+        res.status(400).send('User with this email already exists');
+      } else {
+        console.log('Error saving user:', err);
         res.status(400).send(err);
+      }
     }
-};
+  };
 
 const getAllUsers = async (req, res) => {
     try {
@@ -72,19 +77,17 @@ const deleteUser = async (req, res) => {
 
 const generateToken = async (req, res) => {
     try {
-        console.log("generateToken: req body:" + req.body.email + ':' + req.body.password);
-        const user = await User.findOne({ email: req.body.email, password: req.body.password });
-        if (!user) {
-            return res.status(401).send('Invalid credentials');
-        }
-        const token = jwt.sign({ email: user.email }, 'secret', { expiresIn: '24h' });
-        res.json({ 'token': token });
-        console.log("token:" + token);
+      const { email, password } = req.body;
+      const user = await User.findOne({ email, password });
+      if (!user) {
+        return res.status(401).send('Invalid credentials');
+      }
+      const token = jwt.sign({ email: user.email }, 'secret', { expiresIn: '24h' });
+      res.json({ token, user }); // Include user in the response
     } catch (err) {
-        console.log('Error generating token:', err);
-        res.status(400).send(err);
+      res.status(400).send(err);
     }
-};
+  };
 
 module.exports = {
     registerUser,
