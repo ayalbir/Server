@@ -50,6 +50,7 @@ const dislikeVideo = async (req, res) => {
     }
 };
 
+
 const getVideosForUser = async (req, res) => {
     try {
         const email = req.params.id;
@@ -78,9 +79,8 @@ const getTopAndRandomVideos = async (req, res) => {
 
 const createVideo = async (req, res) => {
     try {
-        const email = req.params.id;
-        const { title, description, url, views } = req.body;
-        const newVideo = new Video({ email, title, description, url, createdAt: new Date(), views: views || 0 });
+        const { email, title, description, url, pic, views } = req.body;
+        const newVideo = new Video({ email, title, description, url, pic, createdAt: new Date(), views: views || 0 });
         await newVideo.save();
         res.status(201).json(newVideo);
     } catch (err) {
