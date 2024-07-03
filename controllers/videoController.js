@@ -128,7 +128,11 @@ const deleteVideo = async (req, res) => {
         if (!video) {
             return res.status(404).send('Video not found');
         }
-        res.status(200).json({ message: 'Video deleted' });
+        
+        // Delete associated comments
+        await Comment.deleteMany({ videoId: pid });
+
+        res.status(200).json({ message: 'Video and associated comments deleted' });
     } catch (err) {
         res.status(500).send(err);
     }

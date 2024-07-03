@@ -43,17 +43,19 @@ const updateComment = async (req, res) => {
 const deleteComment = async (req, res) => {
     try {
         const { pid, cid } = req.params;
-        const comment = await Comment.findOneAndDelete({ videoId: pid, _id: cid });
+        const comment = await Comment.findOneAndDelete({ _id: cid, videoId: pid });
         if (!comment) {
             return res.status(404).send('Comment not found');
         }
+        
+        // Remove comment from the video's comments array
         await Video.findOneAndUpdate({ _id: pid }, { $pull: { comments: cid } });
+
         res.status(200).json({ message: 'Comment deleted' });
     } catch (err) {
         res.status(500).send(err);
     }
 };
-
 module.exports = {
     createComment,
     getCommentById,
