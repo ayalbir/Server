@@ -64,7 +64,7 @@ const getVideosForUser = async (req, res) => {
 const getTopAndRandomVideos = async (req, res) => {
     try {
         const totalVideos = await Video.countDocuments();
-        if (totalVideos < 4) {
+        if (totalVideos < 1) {
             return res.status(204).send('Not enough videos');
         }
 
@@ -97,7 +97,7 @@ const createVideo = async (req, res) => {
 
 const getVideoById = async (req, res) => {
     try {
-        const { id, pid } = req.params;
+        const { pid } = req.params;
         const video = await Video.findOne({ _id: pid }).populate('comments');
         if (!video) {
             return res.status(404).send('Video not found');
@@ -110,8 +110,8 @@ const getVideoById = async (req, res) => {
 
 const updateVideo = async (req, res) => {
     try {
-        const {pid } = req.params;
-        const updatedVideo = await Video.findOneAndUpdate({_id: pid }, req.body, { new: true });
+        const { pid } = req.params;
+        const updatedVideo = await Video.findOneAndUpdate({ _id: pid }, req.body, { new: true });
         if (!updatedVideo) {
             return res.status(404).send('Video not found');
         }
