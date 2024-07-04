@@ -14,4 +14,3 @@ Ensure you have the following installed:
 •	Express.js: Framework for routing and middleware.
 •	MongoDB: Stores users, videos, and comments.
 •	Client: React application located in public/ built with builder.
-
