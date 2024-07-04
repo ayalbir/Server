@@ -14,4 +14,5 @@ Ensure you have the following installed:
 •	Express.js: Framework for routing and middleware.
 •	MongoDB: Stores users, videos, and comments.
 •	Client: React application located in public/ built with builder.
+•   When the App is initialized, there no videos/users in the DB, so the client needs to create them.
 
