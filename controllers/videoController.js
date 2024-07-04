@@ -65,9 +65,10 @@ const getTopAndRandomVideos = async (req, res) => {
     try {
         const totalVideos = await Video.countDocuments();
         if (totalVideos < 20) {
-            return res.status(204).send('Not enough videos');
+            const videos = await Video.find();
+            return res.status(200).json(videos);
         }
-
+        
         const top10ViewedVideos = await Video.find().sort({ views: -1 }).limit(10);
         const top10ViewedVideoIds = top10ViewedVideos.map(video => video._id);
 
