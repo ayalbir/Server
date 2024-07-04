@@ -64,16 +64,16 @@ const getVideosForUser = async (req, res) => {
 const getTopAndRandomVideos = async (req, res) => {
     try {
         const totalVideos = await Video.countDocuments();
-        if (totalVideos < 1) {
+        if (totalVideos < 20) {
             return res.status(204).send('Not enough videos');
         }
 
-        const top10ViewedVideos = await Video.find().sort({ views: -1 }).limit(2);
+        const top10ViewedVideos = await Video.find().sort({ views: -1 }).limit(10);
         const top10ViewedVideoIds = top10ViewedVideos.map(video => video._id);
 
         const randomVideos = await Video.aggregate([
             { $match: { _id: { $nin: top10ViewedVideoIds } } },
-            { $sample: { size: 2 } }
+            { $sample: { size: 10 } }
         ]);
 
         const combinedVideos = top10ViewedVideos.concat(randomVideos).sort(() => Math.random() - 0.5);
