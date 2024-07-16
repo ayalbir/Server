@@ -24,7 +24,7 @@ router.post('/', (req, res, next) => {
 router.get('/api/users', userController.getAllUsers);
 router.post('/api/users', userController.registerUser);
 router.post('/api/tokens', userController.generateToken);
-router.get('/api/users/:id', authJWT, userController.getUserById);
+router.get('/api/users/:id', userController.getUserById);
 router.put('/api/users/:id', authJWT, userController.updateUser);
 router.patch('/api/users/:id', authJWT, userController.updateUser);
 router.delete('/api/users/:id', authJWT, userController.deleteUser);

@@ -40,7 +40,7 @@ const getUserById = async (req, res) => {
         if (!user) {
             return res.status(404).send('User not found');
         }
-        res.send(user);
+        res.status(201).send(user);
     } catch (err) {
         res.status(500).send(err);
     }
@@ -83,7 +83,7 @@ const generateToken = async (req, res) => {
         return res.status(401).send('Invalid credentials');
       }
       const token = jwt.sign({ email: user.email }, 'secret', { expiresIn: '24h' });
-      res.json({ token, user }); // Include user in the response
+      res.json({ token, user }); 
     } catch (err) {
       res.status(400).send(err);
     }
