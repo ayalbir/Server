@@ -142,6 +142,7 @@ const deleteVideo = async (req, res) => {
 const updateVideoViews = async (req, res) => {
     try {
         const { pid } = req.params;
+        const { email } = req.body;
         const updatedVideo = await Video.findOneAndUpdate(
             { _id: pid },
             { $inc: { views: 1 } },
@@ -156,7 +157,7 @@ const updateVideoViews = async (req, res) => {
 
         client.connect(5555, '192.168.135.128', () => {
             console.log('Connected to C++ server');
-            client.write(`Video ${pid} was viewed\n`);
+            client.write(`${email} viewed video "${updatedVideo.title}" (videoID: ${pid})\n`);
         });
 
         client.on('data', (data) => {
