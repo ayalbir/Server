@@ -1,4 +1,6 @@
 const Video = require('../models/videodb');
+const net = require('net'); 
+
 
 const likeVideo = async (req, res) => {
     try {
@@ -136,6 +138,7 @@ const deleteVideo = async (req, res) => {
     }
 };
 
+
 const updateVideoViews = async (req, res) => {
     try {
         const { pid } = req.params;
@@ -147,11 +150,30 @@ const updateVideoViews = async (req, res) => {
         if (!updatedVideo) {
             return res.status(404).send('Video not found');
         }
+
+        // Create a TCP client to send data to C++ server
+        const client = new net.Socket();
+
+        client.connect(5555, '192.168.135.128', () => {
+            console.log('Connected to C++ server');
+            client.write(`Video ${pid} was viewed\n`);
+        });
+
+        client.on('data', (data) => {
+            console.log('Received from C++ server:', data.toString());
+            client.destroy(); // Close the connection after receiving data
+        });
+
+        client.on('close', () => {
+            console.log('Connection to C++ server closed');
+        });
+
         res.status(200).json(updatedVideo);
     } catch (err) {
         res.status(400).send(err);
     }
 };
+
 
 
 module.exports = {
