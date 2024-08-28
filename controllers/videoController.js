@@ -1,5 +1,5 @@
 const Video = require('../models/videodb');
-const net = require('net'); 
+const net = require('net');
 
 
 const likeVideo = async (req, res) => {
@@ -63,14 +63,91 @@ const getVideosForUser = async (req, res) => {
     }
 };
 
+const getSuggestedVideos = async (req, res) => {
+    try {
+        const email = req.query.email;
+
+        let recommendedVideoIds = [];
+        let receivedData = '';
+
+        if (email && email !== 'null' && email !== 'noConnectedUser') {
+            // Create a TCP client to send data to the C++ server
+            const client = new net.Socket();
+
+            client.connect(5555, '192.168.135.128', () => {
+                console.log('Connected to C++ server');
+
+                // Send the command to get recommendations
+                const command = `GET_RECOMMENDATIONS ${email}`;
+                client.write(command);
+            });
+
+            client.on('data', (data) => {
+                receivedData += data.toString();
+            });
+
+            await new Promise((resolve) => {
+                client.on('close', () => {
+                    console.log('Connection to C++ server closed');
+                    recommendedVideoIds = receivedData.trim().split(' ').filter(id => id); // Split and filter out empty strings
+                    resolve();
+                });
+            });
+        }
+
+        // Fetch video IDs based on recommended IDs
+        let finalVideoIds = recommendedVideoIds;
+
+        // If there are fewer than 10 recommended videos, fill up with the most viewed video IDs
+        if (finalVideoIds.length < 10) {
+            const additionalVideoIds = await Video.find({ _id: { $nin: recommendedVideoIds } })
+                .sort({ views: -1 })
+                .limit(10 - finalVideoIds.length)
+                .select('_id'); // Select only the _id field
+
+            finalVideoIds = finalVideoIds.concat(additionalVideoIds.map(video => video._id.toString()));
+        }
+
+        res.status(200).json(finalVideoIds);
+    } catch (err) {
+        res.status(500).send(err);
+    }
+};
+
 const getTopAndRandomVideos = async (req, res) => {
     try {
+        const email = req.query.email;
+        if (
+            email != '' && email != null && email != 'null' && email != 'noConnectedUser'
+        ) {
+            // Create a TCP client to send data to C++ server
+            const client = new net.Socket();
+
+            client.connect(5555, '192.168.135.128', () => {
+               // console.log('Connected to C++ server');
+
+                // Send the command in the format expected by the C++ server
+                const command = `GET_RECOMMENDATIONS ${email}`;
+                client.write(command);
+            });
+
+            client.on('data', (data) => {
+                console.log('Received from C++ server:', data.toString());
+                client.destroy(); // Close the connection after receiving data
+            });
+
+            /*
+            client.on('close', () => {
+                console.log('Connection to C++ server closed');
+            });
+            */
+        }
         const totalVideos = await Video.countDocuments();
         if (totalVideos < 20) {
             const videos = await Video.find();
             return res.status(200).json(videos);
         }
-        
+
         const top10ViewedVideos = await Video.find().sort({ views: -1 }).limit(10);
         const top10ViewedVideoIds = top10ViewedVideos.map(video => video._id);
 
@@ -85,7 +162,6 @@ const getTopAndRandomVideos = async (req, res) => {
         res.status(500).send(err);
     }
 };
-
 
 const createVideo = async (req, res) => {
     try {
@@ -131,7 +207,7 @@ const deleteVideo = async (req, res) => {
         if (!video) {
             return res.status(404).send('Video not found');
         }
-        
+
         res.status(200).json({ message: 'Video and associated comments deleted' });
     } catch (err) {
         res.status(500).send(err);
@@ -143,11 +219,14 @@ const updateVideoViews = async (req, res) => {
     try {
         const { pid } = req.params;
         const { email } = req.body;
+
+        // Update the video views in the MongoDB database
         const updatedVideo = await Video.findOneAndUpdate(
             { _id: pid },
             { $inc: { views: 1 } },
             { new: true }
         );
+
         if (!updatedVideo) {
             return res.status(404).send('Video not found');
         }
@@ -155,9 +234,16 @@ const updateVideoViews = async (req, res) => {
         // Create a TCP client to send data to C++ server
         const client = new net.Socket();
 
-        client.connect(5555, '192.168.135.128', () => {
+        if (
+            email != '' && email != null && email != 'null' && email != 'noConnectedUser'
+        )
+        {
+                    client.connect(5555, '192.168.135.128', () => {
             console.log('Connected to C++ server');
-            client.write(`${email} viewed video "${updatedVideo.title}" (videoID: ${pid})\n`);
+
+            // Send the command in the format expected by the C++ server
+            const command = `UPDATE_VIEW ${email} ${pid}`;
+            client.write(command);
         });
 
         client.on('data', (data) => {
@@ -168,12 +254,14 @@ const updateVideoViews = async (req, res) => {
         client.on('close', () => {
             console.log('Connection to C++ server closed');
         });
+        }
 
         res.status(200).json(updatedVideo);
     } catch (err) {
         res.status(400).send(err);
     }
 };
+
 
 
 
@@ -185,6 +273,6 @@ module.exports = {
     createVideo,
     getVideoById,
     updateVideo,
-    deleteVideo, 
+    deleteVideo,
     updateVideoViews,
 };
