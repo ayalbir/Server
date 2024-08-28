@@ -27,7 +27,6 @@ app.use('/', userRoutes);
 app.use('/', videoRoutes);
 app.use('/', commentsRoutes);
 
-
 // Connect to MongoDB
 mongoose.connect('mongodb://localhost:27017/footube', {
   useNewUrlParser: true,
