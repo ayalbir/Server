@@ -275,4 +275,5 @@ module.exports = {
     updateVideo,
     deleteVideo,
     updateVideoViews,
+    getSuggestedVideos,
 };
