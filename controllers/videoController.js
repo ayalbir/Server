@@ -69,21 +69,23 @@ const getSuggestedVideos = async (req, res) => {
 
         let recommendedVideoIds = [];
         let receivedData = '';
-
         if (email && email !== 'null' && email !== 'noConnectedUser') {
             // Create a TCP client to send data to the C++ server
             const client = new net.Socket();
 
-            client.connect(5555, '172.22.94.177', () => {
+            client.connect(5555, '192.168.135.128', () => {
                 console.log('Connected to C++ server');
 
                 // Send the command to get recommendations
                 const command = `GET_RECOMMENDATIONS ${email}`;
                 client.write(command);
+                client.end();
             });
 
             client.on('data', (data) => {
-                receivedData += data.toString();
+                receivedData = data.toString();
+                console.log('Received from C++ server:', receivedData
+                );
             });
 
             await new Promise((resolve) => {
@@ -212,12 +214,13 @@ const updateVideoViews = async (req, res) => {
             email != '' && email != null && email != 'null' && email != 'noConnectedUser'
         )
         {
-            client.connect(5555, '172.22.94.177', () => {
+            client.connect(5555, '192.168.135.128', () => {
             console.log('Connected to C++ server');
 
             // Send the command in the format expected by the C++ server
             const command = `UPDATE_VIEW ${email} ${pid}`;
             client.write(command);
+            client.end();
         });
 
         client.on('data', (data) => {
