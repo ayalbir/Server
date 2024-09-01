@@ -65,11 +65,11 @@ const getVideosForUser = async (req, res) => {
 
 const getSuggestedVideos = async (req, res) => {
     try {
-        const email = req.query.email;
+        const email = req.params.email;
+        const videoId = req.params.vid;
 
         let recommendedVideoIds = [];
         let receivedData = '';
-
         if (email && email !== 'null' && email !== 'noConnectedUser') {
             // Create a TCP client to send data to the C++ server
             const client = new net.Socket();
@@ -80,35 +80,41 @@ const getSuggestedVideos = async (req, res) => {
                 // Send the command to get recommendations
                 const command = `GET_RECOMMENDATIONS ${email}`;
                 client.write(command);
+                client.end();
             });
 
             client.on('data', (data) => {
-                receivedData += data.toString();
+                receivedData = data.toString();
+                console.log('Received from C++ server:', receivedData);
             });
 
             await new Promise((resolve) => {
                 client.on('close', () => {
-                    console.log('Connection to C++ server closed');
+                    console.log('Connection to C++ server closed\n');
                     recommendedVideoIds = receivedData.trim().split(' ').filter(id => id); // Split and filter out empty strings
                     resolve();
                 });
             });
         }
 
-        // Fetch video IDs based on recommended IDs
-        let finalVideoIds = recommendedVideoIds;
-
-        // If there are fewer than 10 recommended videos, fill up with the most viewed video IDs
-        if (finalVideoIds.length < 10) {
-            const additionalVideoIds = await Video.find({ _id: { $nin: recommendedVideoIds } })
-                .sort({ views: -1 })
-                .limit(10 - finalVideoIds.length)
-                .select('_id'); // Select only the _id field
-
-            finalVideoIds = finalVideoIds.concat(additionalVideoIds.map(video => video._id.toString()));
+        // Fetch videos based on recommended IDs
+        let recommendedVideos = [];
+        if (recommendedVideoIds.length > 0) {
+            recommendedVideos = await Video.find({ _id: { $in: recommendedVideoIds } });
         }
 
-        res.status(200).json(finalVideoIds);
+        // Remove the video with the current videoId from the recommended videos
+        recommendedVideos = recommendedVideos.filter(video => video._id.toString() !== videoId);
+
+        // If there are fewer than 10 recommended videos, fill up with the most viewed videos
+        if (recommendedVideos.length < 10) {
+            const additionalVideos = await Video.find({ _id: { $nin: [...recommendedVideoIds, videoId] } })
+                .sort({ views: -1 })
+                .limit(10 - recommendedVideos.length).lean();
+            recommendedVideos = recommendedVideos.concat(additionalVideos);
+        }
+
+        res.status(200).json(recommendedVideos);
     } catch (err) {
         res.status(500).send(err);
     }
@@ -116,32 +122,6 @@ const getSuggestedVideos = async (req, res) => {
 
 const getTopAndRandomVideos = async (req, res) => {
     try {
-        const email = req.query.email;
-        if (
-            email != '' && email != null && email != 'null' && email != 'noConnectedUser'
-        ) {
-            // Create a TCP client to send data to C++ server
-            const client = new net.Socket();
-
-            client.connect(5555, '192.168.135.128', () => {
-               // console.log('Connected to C++ server');
-
-                // Send the command in the format expected by the C++ server
-                const command = `GET_RECOMMENDATIONS ${email}`;
-                client.write(command);
-            });
-
-            client.on('data', (data) => {
-                console.log('Received from C++ server:', data.toString());
-                client.destroy(); // Close the connection after receiving data
-            });
-
-            /*
-            client.on('close', () => {
-                console.log('Connection to C++ server closed');
-            });
-            */
-        }
         const totalVideos = await Video.countDocuments();
         if (totalVideos < 20) {
             const videos = await Video.find();
@@ -238,12 +218,13 @@ const updateVideoViews = async (req, res) => {
             email != '' && email != null && email != 'null' && email != 'noConnectedUser'
         )
         {
-                    client.connect(5555, '192.168.135.128', () => {
+            client.connect(5555, '192.168.135.128', () => {
             console.log('Connected to C++ server');
 
             // Send the command in the format expected by the C++ server
             const command = `UPDATE_VIEW ${email} ${pid}`;
             client.write(command);
+            client.end();
         });
 
         client.on('data', (data) => {
@@ -252,7 +233,7 @@ const updateVideoViews = async (req, res) => {
         });
 
         client.on('close', () => {
-            console.log('Connection to C++ server closed');
+            console.log('Connection to C++ server closed\n');
         });
         }
 
