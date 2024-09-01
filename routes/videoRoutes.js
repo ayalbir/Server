@@ -17,6 +17,4 @@ router.patch('/api/videos/:pid/views', videoController.updateVideoViews);
 router.delete('/api/users/:id/videos/:pid', authJWT, videoController.deleteVideo);
 router.delete('/api/videos/:email', authJWT, videoController.deleteVideosByEmail);
 
-
 module.exports = router;
-

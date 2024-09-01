@@ -33,7 +33,12 @@ mongoose.connect('mongodb://localhost:27017/footube', {
   useUnifiedTopology: true
 })
   .then(() => console.log('MongoDB connected'))
-  .catch(err => console.log('MongoDB connection error:', err));
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// Handle database connection errors after the initial connection
+mongoose.connection.on('error', err => {
+  console.error(`MongoDB error: ${err.message}`);
+});
 
 // Start the server
 app.listen(port, hostname, () => {
