@@ -66,10 +66,39 @@ const deleteComment = async (req, res) => {
         res.status(500).send(err);
     }
 };
+
+const deleteCommentsForEmail = async (req, res) => {
+    try {
+        const { email } = req.params;
+
+        // Find all comments associated with the email
+        const comments = await Comment.find({ email });
+
+        if (comments.length === 0) {
+            return res.status(404).json({ message: 'No comments found for this email' });
+        }
+
+        // Delete all comments associated with the email
+        const commentIds = comments.map(comment => comment._id);
+        await Comment.deleteMany({ email });
+
+        // Remove references to these comments from the corresponding videos
+        await Video.updateMany(
+            { comments: { $in: commentIds } },
+            { $pull: { comments: { $in: commentIds } } }
+        );
+
+        res.status(200).json({ message: `${comments.length} comment(s) deleted` });
+    } catch (err) {
+        res.status(500).send(err);
+    }
+};
+
 module.exports = {
     createComment,
     getCommentById,
     updateComment,
     getCommentsByVideoId,
-    deleteComment
+    deleteComment,
+    deleteCommentsForEmail,
 };

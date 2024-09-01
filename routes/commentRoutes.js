@@ -10,5 +10,7 @@ router.get('/api/comments/:cid', commentController.getCommentById);
 router.put('/api/comments/:cid', authJWT, commentController.updateComment);
 router.patch('/api/comments/:cid', authJWT, commentController.updateComment);
 router.delete('/api/videos/:pid/comments/:cid', authJWT, commentController.deleteComment);
+router.delete('/api/comments/:email', authJWT, commentController.deleteCommentsForEmail);
+
 
 module.exports = router;
