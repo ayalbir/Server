@@ -65,7 +65,8 @@ const getVideosForUser = async (req, res) => {
 
 const getSuggestedVideos = async (req, res) => {
     try {
-        const email = req.query.email;
+        const email = req.params.email;
+        const videoId = req.params.vid;
 
         let recommendedVideoIds = [];
         let receivedData = '';
@@ -84,13 +85,12 @@ const getSuggestedVideos = async (req, res) => {
 
             client.on('data', (data) => {
                 receivedData = data.toString();
-                console.log('Received from C++ server:', receivedData
-                );
+                console.log('Received from C++ server:', receivedData);
             });
 
             await new Promise((resolve) => {
                 client.on('close', () => {
-                    console.log('Connection to C++ server closed');
+                    console.log('Connection to C++ server closed\n');
                     recommendedVideoIds = receivedData.trim().split(' ').filter(id => id); // Split and filter out empty strings
                     resolve();
                 });
@@ -103,9 +103,12 @@ const getSuggestedVideos = async (req, res) => {
             recommendedVideos = await Video.find({ _id: { $in: recommendedVideoIds } });
         }
 
+        // Remove the video with the current videoId from the recommended videos
+        recommendedVideos = recommendedVideos.filter(video => video._id.toString() !== videoId);
+
         // If there are fewer than 10 recommended videos, fill up with the most viewed videos
         if (recommendedVideos.length < 10) {
-            const additionalVideos = await Video.find({ _id: { $nin: recommendedVideoIds } })
+            const additionalVideos = await Video.find({ _id: { $nin: [...recommendedVideoIds, videoId] } })
                 .sort({ views: -1 })
                 .limit(10 - recommendedVideos.length).lean();
             recommendedVideos = recommendedVideos.concat(additionalVideos);
@@ -116,6 +119,7 @@ const getSuggestedVideos = async (req, res) => {
         res.status(500).send(err);
     }
 };
+
 const getTopAndRandomVideos = async (req, res) => {
     try {
         const totalVideos = await Video.countDocuments();
@@ -229,7 +233,7 @@ const updateVideoViews = async (req, res) => {
         });
 
         client.on('close', () => {
-            console.log('Connection to C++ server closed');
+            console.log('Connection to C++ server closed\n');
         });
         }
 
