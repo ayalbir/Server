@@ -194,6 +194,17 @@ const deleteVideo = async (req, res) => {
     }
 };
 
+const deleteVideosByEmail = async (req, res) => {
+    try {
+        const { email } = req.params;
+        const result = await Video.deleteMany({ email });
+        if (result.deletedCount === 0) return res.status(404).json({ message: 'No videos found for this email' });
+        res.status(200).json({ message: `${result.deletedCount} video(s) deleted` });
+    } catch (err) {
+        res.status(500).send(err);
+    }
+};
+
 
 const updateVideoViews = async (req, res) => {
     try {
@@ -257,4 +268,5 @@ module.exports = {
     deleteVideo,
     updateVideoViews,
     getSuggestedVideos,
+    deleteVideosByEmail,
 };
